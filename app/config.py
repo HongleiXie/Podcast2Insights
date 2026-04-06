@@ -3,11 +3,12 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# Load .env from the project root before any os.getenv() call.
-# This makes env vars available regardless of how the app is launched
-# (VSCode, terminal, uvicorn directly, etc.).
+# Resolve .env relative to this file (app/config.py → project root/.env)
+# so the path is correct regardless of the working directory at launch time.
+# Covers VSCode "Run" button, terminal from any directory, CI (no .env = no-op).
 # Shell-level exports take precedence over .env values (override=False default).
-load_dotenv()
+_ENV_FILE = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(_ENV_FILE)
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"

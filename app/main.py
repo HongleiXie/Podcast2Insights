@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import logging
 import uuid
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 import requests
@@ -8,8 +10,10 @@ from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from .config import AUDIO_DIR, MAX_UPLOAD_BYTES
+from .config import AUDIO_DIR, DIARIZE, HF_TOKEN, MAX_UPLOAD_BYTES, OLLAMA_MODEL
 from .indexer import search
+
+logger = logging.getLogger(__name__)
 from .models import (
     CreateJobResponse,
     Engine,
@@ -30,7 +34,23 @@ from .store import JobStore
 ALLOWED_EXTENSIONS = {".mp3", ".wav", ".m4a", ".mp4", ".webm", ".ogg"}
 ALLOWED_MIME_PREFIX = ("audio/", "video/")
 
-app = FastAPI(title="Podcast2Insights Demo")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Log the effective config once at startup so issues are immediately visible.
+    token_status = f"set ({HF_TOKEN[:4]}…)" if HF_TOKEN else "NOT SET"
+    diarize_status = "enabled" if (DIARIZE and HF_TOKEN) else (
+        "disabled (HF_TOKEN missing)" if DIARIZE else "disabled (DIARIZE=false)"
+    )
+    logger.info("── Podcast2Insights startup ──────────────────────")
+    logger.info("  HF_TOKEN     : %s", token_status)
+    logger.info("  Diarisation  : %s", diarize_status)
+    logger.info("  LLM model    : %s", OLLAMA_MODEL)
+    logger.info("──────────────────────────────────────────────────")
+    yield
+
+
+app = FastAPI(title="Podcast2Insights Demo", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 
 store = JobStore()
