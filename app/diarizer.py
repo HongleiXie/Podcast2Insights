@@ -23,6 +23,7 @@ Device
 The pipeline is moved to MPS (Apple Silicon GPU) if available, otherwise CPU.
 Diarisation of a 1-hour podcast takes roughly 2-5 min on an M-series chip.
 """
+
 from __future__ import annotations
 
 import logging
@@ -48,14 +49,13 @@ def _get_pipeline():
         import torch
         from pyannote.audio import Pipeline
     except ImportError as exc:
-        raise RuntimeError(
-            "pyannote.audio is not installed. Run: uv add pyannote.audio"
-        ) from exc
+        raise RuntimeError("pyannote.audio is not installed. Run: uv add pyannote.audio") from exc
 
     try:
         # huggingface_hub ≥ 0.17 prefers `token` over `use_auth_token`.
         # Pass via login() so both old and new hub versions are happy.
         from huggingface_hub import login
+
         login(token=HF_TOKEN, add_to_git_credential=False)
         pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1")
     except Exception as exc:
@@ -104,8 +104,7 @@ def diarize(audio_path: Path) -> list[tuple[float, float, str]]:
         annotation = pipeline(str(audio_path))
     except Exception as exc:
         logger.warning(
-            "Speaker diarisation FAILED — falling back to single speaker. "
-            "Reason: %s",
+            "Speaker diarisation FAILED — falling back to single speaker. Reason: %s",
             exc,
         )
         return []
