@@ -1,98 +1,91 @@
-# Podcast2Insights (Demo)
+# Podcast2Insights
 
-Turn English/Chinese (including mixed) podcast audio into a plain UTF-8 `.txt` transcript.
+Upload a podcast → get a transcript → ask questions about it. A self-hosted, fully local toy version of NotebookLM. English, Chinese, and mixed-language audio supported.
 
-## What this demo does
+## What it does
 
-- Accepts audio from either:
-  - file upload (max 100MB)
-  - podcast URL
-- Runs async transcription jobs so long audio does not timeout.
-- Supports two engines:
-  - `faster_whisper`
-  - `qwen3_asr_1_7b`
-- Normalizes audio to mono 16k WAV, chunks it, transcribes, and merges chunk text.
-- Produces `{job_id}.txt` output.
+1. **Transcribe** — upload an audio file or paste a podcast URL. The app transcribes it and produces a timestamped `.txt` file.
+2. **Index** — transcript is automatically chunked and embedded into a local FAISS vector index.
+3. **Ask** — type any question. The app retrieves the most relevant passages and streams a grounded answer with timestamp citations.
 
-## Requirements
+Everything runs locally. No data leaves your machine.
 
-- Python 3.11+
-- [uv](https://docs.astral.sh/uv/)
-- `ffmpeg` and `ffprobe`
-- `yt-dlp` (needed for non-direct MP3 URLs)
+## System requirements
 
-## Quick start (uv)
+| | Minimum | Recommended |
+|---|---|---|
+| **OS** | macOS (Apple Silicon) | macOS M3 / M4 Pro |
+| **RAM** | 16 GB | 48 GB |
+| **Python** | 3.11+ | 3.11+ |
+| **Disk** | ~10 GB free | ~15 GB free |
+
+> The recommended spec is for running the full stack (mlx-whisper large-v3 + bge-m3 + Qwen3-8B) comfortably without swapping. The minimum spec can run smaller model variants.
+
+## Dependencies
+
+Install these before running:
+
+- [uv](https://docs.astral.sh/uv/) — Python package manager
+- [ffmpeg](https://ffmpeg.org/) — audio processing (`brew install ffmpeg`)
+- [Ollama](https://ollama.com/) — local LLM server (`brew install ollama`)
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) — for non-direct podcast URLs (optional)
+
+## First-time setup
 
 ```bash
+# 1. Pull the LLM (once, ~5 GB download)
+ollama pull qwen3:8b
+
+# 2. Install Python dependencies
 uv sync
+```
+
+## Running locally
+
+```bash
+# Terminal 1 — LLM server
+ollama serve
+
+# Terminal 2 — app
 uv run uvicorn app.main:app --reload
 ```
 
-Open: [http://localhost:8000](http://localhost:8000)
+Open [http://localhost:8000](http://localhost:8000).
 
-## Use from the web page
+## Usage
 
-1. Choose an engine.
-2. Provide either a file or a podcast URL (not both).
-3. Submit.
-4. Wait for status to become `completed`.
-5. Download the `.txt` transcript.
+1. Select an ASR engine (`mlx_whisper` recommended on Apple Silicon).
+2. Upload an audio file or paste a podcast URL.
+3. Click **Transcribe** and wait for the job to complete.
+4. Once the index is ready (shown by a status pill), type a question and click **Ask**.
+5. The answer streams in with `[HH:MM:SS]` timestamp citations.
 
-## API
+## API endpoints
 
-### `POST /transcriptions`
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/transcriptions` | Create a transcription job (file upload or JSON URL) |
+| `GET` | `/transcriptions/{job_id}` | Poll job status and metadata |
+| `GET` | `/transcriptions/{job_id}/text` | Download completed transcript |
+| `GET` | `/transcriptions/{job_id}/index-status` | Poll RAG index status (`building` / `ready` / `failed`) |
+| `POST` | `/transcriptions/{job_id}/query` | Stream a grounded answer (SSE) |
 
-Create a transcription job.
+## Configuration
 
-- File mode (`multipart/form-data`):
-  - `file`: audio/video file
-  - `engine`: `faster_whisper` or `qwen3_asr_1_7b`
-- URL mode (`application/json`):
+Key environment variables (all optional):
 
-```json
-{
-  "podcast_url": "https://example.com/episode.mp3",
-  "engine": "faster_whisper"
-}
-```
-
-Response:
-
-```json
-{
-  "job_id": "<id>",
-  "status": "queued"
-}
-```
-
-### `GET /transcriptions/{job_id}`
-
-Check job status (`queued | running | completed | failed`) and metadata.
-
-### `GET /transcriptions/{job_id}/text`
-
-Download transcript as UTF-8 plain text once completed.
+| Variable | Default | Description |
+|---|---|---|
+| `MLX_WHISPER_MODEL` | `mlx-community/whisper-large-v3-mlx` | ASR model for mlx_whisper |
+| `EMBED_MODEL` | `BAAI/bge-m3` | Sentence embedding model |
+| `EMBED_DEVICE` | `mps` | Embedding device (`mps` / `cpu`) |
+| `OLLAMA_MODEL` | `qwen3:8b` | LLM served by Ollama |
+| `OLLAMA_BASE_URL` | `http://localhost:11434/v1` | Ollama API base URL |
+| `OLLAMA_THINKING` | `false` | Enable Qwen3 chain-of-thought thinking mode |
+| `TOP_K` | `5` | Number of chunks retrieved per query |
 
 ## Development
-
-Run tests:
 
 ```bash
 uv run pytest -q
 ```
-
-## Notes
-
-- This is a single-machine, single-worker FIFO demo.
-- Output lines include timestamps and speaker labels (`[HH:MM:SS] Speaker X: ...`).
-- Transcription is `transcribe` mode (no translation), so mixed language is preserved.
-- `faster_whisper` defaults are tuned for CPU latency: model `small`, `compute_type=int8`, and `beam_size=1`.
-- You can tune these with env vars: `FASTER_WHISPER_MODEL_NAME`, `FASTER_WHISPER_DEVICE`, `FASTER_WHISPER_COMPUTE_TYPE`, `FASTER_WHISPER_BEAM_SIZE`.
-- For `qwen3_asr_1_7b`, the app uses the official `qwen-asr` package runtime.
-- You can tune Qwen with env vars:
-  - `QWEN3_ASR_MODEL_NAME` (default `Qwen/Qwen3-ASR-1.7B`)
-  - `QWEN3_ASR_DEVICE` (`auto|cuda|mps|cpu`, default `auto`, where `auto` prefers CUDA then CPU)
-  - `QWEN3_ASR_DTYPE` (`auto|float16|bfloat16|float32`, default `auto`)
-  - `QWEN3_ASR_MAX_NEW_TOKENS` (default `128`)
-  - `QWEN3_ASR_TOKENS_PER_SECOND` (default `4.0`, used to adapt decode length per chunk)
-- On CPU, `qwen3_asr_1_7b` can still be slow even for short audio; use a GPU when possible.
