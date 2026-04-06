@@ -37,12 +37,6 @@ QWEN3_ASR_MAX_NEW_TOKENS = int(os.getenv("QWEN3_ASR_MAX_NEW_TOKENS", "1024"))
 # MLX Whisper (Apple Silicon, Metal-accelerated)
 MLX_WHISPER_MODEL = os.getenv("MLX_WHISPER_MODEL", "mlx-community/whisper-large-v3-mlx")
 
-# Speaker diarisation via pyannote.audio
-# Requires a HuggingFace token — see app/diarizer.py for setup instructions.
-HF_TOKEN: str = os.getenv("HF_TOKEN", "")
-# Set DIARIZE=false to disable even when HF_TOKEN is present
-DIARIZE: bool = os.getenv("DIARIZE", "true").lower() == "true"
-
 # Embedding model (bge-m3 — multilingual, 1024-dim)
 EMBED_MODEL = os.getenv("EMBED_MODEL", "BAAI/bge-m3")
 EMBED_DEVICE = os.getenv("EMBED_DEVICE", "mps")  # mps | cpu

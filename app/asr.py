@@ -82,21 +82,14 @@ class FasterWhisperEngine(ASREngine):
             beam_size=self.beam_size,
             language=None,
         )
-        timeline = options.get("diarization_timeline", [])
         lines: list[str] = []
         for seg in segments:
             text = str(getattr(seg, "text", "")).strip()
             if not text:
                 continue
             start = float(getattr(seg, "start", 0.0) or 0.0)
-            abs_ts = chunk_start + start
-            # Prefer pyannote timeline; fall back to faster-whisper's own label
             speaker = getattr(seg, "speaker", None)
-            if not speaker and timeline:
-                from .diarizer import speaker_at
-
-                speaker = speaker_at(timeline, abs_ts)
-            line = _format_line(abs_ts, speaker, text)
+            line = _format_line(chunk_start + start, speaker, text)
             if line:
                 lines.append(line)
         return "\n".join(lines).strip()
@@ -297,7 +290,6 @@ class MLXWhisperEngine(ASREngine):
         except Exception as exc:
             raise ASRError(f"mlx-whisper inference failed: {exc}") from exc
 
-        timeline = options.get("diarization_timeline", [])
         segments = result.get("segments", [])
         lines: list[str] = []
         for seg in segments:
@@ -305,14 +297,7 @@ class MLXWhisperEngine(ASREngine):
             if not text:
                 continue
             start = float(seg.get("start", 0.0))
-            abs_ts = chunk_start + start
-            if timeline:
-                from .diarizer import speaker_at
-
-                speaker = speaker_at(timeline, abs_ts)
-            else:
-                speaker = "Speaker A"
-            line = _format_line(abs_ts, speaker, text)
+            line = _format_line(chunk_start + start, "Speaker A", text)
             if line:
                 lines.append(line)
 
