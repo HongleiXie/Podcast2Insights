@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Podcast2Insights</title>
+    <style>
+      :root {
+        --bg: #f7f4ee;
+        --panel: #fffdf9;
+        --ink: #1f1c17;
+        --muted: #6e665a;
+        --accent: #0f766e;
+        --accent-2: #115e59;
+        --accent-dim: #e6f4f2;
+        --line: #dfd6c7;
+        --warn: #b45309;
+        --warn-bg: #fef9ee;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Avenir Next", "Noto Sans SC", sans-serif;
+        background: radial-gradient(circle at 15% 20%, #fff9ee, var(--bg));
+        color: var(--ink);
+      }
+
+      .container {
+        max-width: 860px;
+        margin: 24px auto;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 6px 20px rgba(31, 28, 23, 0.08);
+      }
+
+      h1 { margin-top: 0; font-size: 1.7rem; }
+      h2 { margin-top: 0; font-size: 1.1rem; color: var(--muted); font-weight: 600; }
+
+      .row {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      label { font-weight: 600; font-size: 0.9rem; }
+
+      input, select, textarea, button {
+        font: inherit;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #fff;
+        box-sizing: border-box;
+        width: 100%;
+      }
+
+      button {
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        width: auto;
+      }
+      button:hover:not(:disabled) { background: var(--accent-2); }
+      button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+      .status {
+        margin-top: 14px;
+        padding: 12px;
+        background: #f4faf9;
+        border: 1px solid #caece9;
+        border-radius: 10px;
+        white-space: pre-wrap;
+        font-size: 0.88rem;
+        color: var(--muted);
+      }
+
+      /* Index status pill */
+      .index-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        background: var(--warn-bg);
+        border: 1px solid #fcd99a;
+        color: var(--warn);
+      }
+      .index-bar.ready {
+        background: var(--accent-dim);
+        border-color: #a3d9d4;
+        color: var(--accent-2);
+      }
+      .index-bar.failed {
+        background: #fff1f1;
+        border-color: #fca5a5;
+        color: #b91c1c;
+      }
+
+      /* Q&A panel */
+      #qa-panel textarea {
+        resize: vertical;
+        min-height: 72px;
+      }
+
+      .answer-box {
+        margin-top: 14px;
+        padding: 14px;
+        background: #f8fbfa;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        white-space: pre-wrap;
+        min-height: 60px;
+        font-size: 0.95rem;
+        line-height: 1.65;
+      }
+
+      .sources {
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .source-chip {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+        background: var(--accent-dim);
+        border: 1px solid #a3d9d4;
+        border-radius: 8px;
+        color: var(--accent-2);
+      }
+
+      .source-chip strong { font-weight: 700; }
+
+      .hidden { display: none; }
+
+      .btn-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+
+      <!-- ── Transcription panel ───────────────────────────────────────── -->
+      <div class="panel">
+        <h1>Podcast2Insights</h1>
+        <p style="color:var(--muted);margin-top:-4px">
+          Upload audio → transcribe → ask questions. English + Chinese supported.
+        </p>
+
+        <div class="row">
+          <label for="engine">ASR Engine</label>
+          <select id="engine">
+            <option value="mlx_whisper">mlx_whisper (recommended — Apple Silicon)</option>
+            <option value="faster_whisper">faster_whisper</option>
+            <option value="qwen3_asr_1_7b">qwen3_asr_1_7b</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <label for="file">File Upload <span style="font-weight:400;color:var(--muted)">(max 100 MB)</span></label>
+          <input id="file" type="file" accept="audio/*,video/*" />
+        </div>
+
+        <div class="row">
+          <label for="url">Podcast URL</label>
+          <input id="url" type="url" placeholder="https://example.com/episode.mp3" />
+        </div>
+
+        <div class="btn-row">
+          <button id="submit">Transcribe</button>
+          <a id="download" class="hidden" href="#">Download Transcript (.txt)</a>
+        </div>
+
+        <div id="status" class="status">Idle</div>
+      </div>
+
+      <!-- ── Q&A panel (hidden until index is ready) ───────────────────── -->
+      <div id="qa-panel" class="panel hidden">
+        <h2>Ask about this podcast</h2>
+
+        <div id="index-bar" class="index-bar">
+          <span id="index-icon">⏳</span>
+          <span id="index-label">Building index…</span>
+        </div>
+
+        <div style="margin-top:14px" class="row">
+          <label for="question">Your question</label>
+          <textarea id="question" placeholder="e.g. What was the main topic discussed?" rows="3"></textarea>
+        </div>
+
+        <button id="ask-btn" disabled>Ask</button>
+
+        <div id="answer-box" class="answer-box hidden"></div>
+        <div id="sources" class="sources hidden"></div>
+      </div>
+
+    </div>
+    <script src="/static/main.js"></script>
+  </body>
+</html>

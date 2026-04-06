@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+app/data/audio/*
+app/data/output/*
+app/data/tmp/*
+app/data/jobs/*
+!app/data/audio/.gitkeep
+!app/data/output/.gitkeep
+!app/data/tmp/.gitkeep
+!app/data/jobs/.gitkeep
+
+# HuggingFace model cache
+.cache/
+*.gguf

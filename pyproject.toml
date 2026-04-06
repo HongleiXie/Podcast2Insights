@@ -1,0 +1,35 @@
+[project]
+name = "podcast2insights"
+version = "0.1.0"
+description = "Bilingual podcast transcription demo (English + Chinese)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi==0.115.6",
+  "uvicorn==0.34.0",
+  "python-multipart==0.0.20",
+  "pydantic==2.10.5",
+  "requests==2.32.3",
+  "yt-dlp==2025.3.31",
+  "faster-whisper==1.1.1",
+  "qwen-asr",
+  "torch==2.6.0",
+  # RAG pipeline
+  "mlx-whisper>=0.4.0",
+  "sentence-transformers>=3.0.0",
+  "faiss-cpu>=1.8.0",
+  "openai>=1.30.0",
+  "numpy>=1.26.0",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3.4",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
