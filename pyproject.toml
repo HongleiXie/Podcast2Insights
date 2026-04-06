@@ -10,12 +10,13 @@ dependencies = [
   "python-multipart==0.0.20",
   "pydantic==2.10.5",
   "requests==2.32.3",
+  "python-dotenv>=1.0.0",
   "yt-dlp==2025.3.31",
   "faster-whisper==1.1.1",
   "qwen-asr",
   "torch==2.6.0",
-  # RAG pipeline
-  "mlx-whisper>=0.4.0",
+  # RAG pipeline — mlx-whisper is Apple Silicon only, skipped on Linux CI
+  "mlx-whisper>=0.4.0; sys_platform == 'darwin'",
   "sentence-transformers>=3.0.0",
   "faiss-cpu>=1.8.0",
   "openai>=1.30.0",
@@ -27,7 +28,15 @@ dependencies = [
 [dependency-groups]
 dev = [
   "pytest>=8.3.4",
+  "ruff>=0.4.0",
 ]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]  # pycodestyle, pyflakes, isort, pyupgrade
 
 [build-system]
 requires = ["hatchling"]

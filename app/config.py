@@ -1,6 +1,14 @@
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+# Load .env from the project root before any os.getenv() call.
+# This makes env vars available regardless of how the app is launched
+# (VSCode, terminal, uvicorn directly, etc.).
+# Shell-level exports take precedence over .env values (override=False default).
+load_dotenv()
+
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 JOBS_DIR = DATA_DIR / "jobs"
