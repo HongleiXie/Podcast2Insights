@@ -11,11 +11,11 @@ Strategy
 * start_ts / end_ts carry the HH:MM:SS timestamps of the first and last line
   in each chunk — used for citation in Q&A answers.
 """
+
 from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Optional
 
 from .models import Chunk
 
@@ -33,7 +33,7 @@ def _flush(
     start_ts: str,
     end_ts: str,
     texts: list[str],
-) -> Optional[Chunk]:
+) -> Chunk | None:
     text = " ".join(texts).strip()
     if not text:
         return None

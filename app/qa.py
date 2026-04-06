@@ -26,10 +26,11 @@ Q&A it adds latency with diminishing returns, so it is off by default
 (OLLAMA_THINKING=false).  When disabled, /no_think is prepended to the
 user message — Qwen3's documented way to suppress thinking per-request.
 """
+
 from __future__ import annotations
 
 import json
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 from openai import AsyncOpenAI
 
@@ -51,18 +52,14 @@ def build_messages(question: str, chunks: list[Chunk]) -> list[dict]:
     """Format retrieved chunks + user question into an OpenAI-style message list."""
     excerpt_blocks = []
     for chunk in chunks:
-        excerpt_blocks.append(
-            f"[{chunk.start_ts}] {chunk.speaker}:\n{chunk.text}"
-        )
+        excerpt_blocks.append(f"[{chunk.start_ts}] {chunk.speaker}:\n{chunk.text}")
     excerpts = "\n\n---\n\n".join(excerpt_blocks)
 
     # Optionally disable Qwen3 thinking mode per-request
     thinking_prefix = "" if OLLAMA_THINKING else "/no_think\n"
 
     user_content = (
-        f"{thinking_prefix}"
-        f"Transcript excerpts:\n\n{excerpts}\n\n"
-        f"---\n\nQuestion: {question}"
+        f"{thinking_prefix}Transcript excerpts:\n\n{excerpts}\n\n---\n\nQuestion: {question}"
     )
 
     return [

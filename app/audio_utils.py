@@ -3,7 +3,6 @@ from __future__ import annotations
 import shutil
 import subprocess
 from pathlib import Path
-from typing import List, Tuple
 
 from .config import CHUNK_SECONDS, OVERLAP_SECONDS, TMP_DIR
 
@@ -57,9 +56,14 @@ def normalize_to_wav(input_path: Path, job_id: str) -> Path:
     return out
 
 
-def chunk_audio(input_wav: Path, job_id: str, chunk_seconds: int = CHUNK_SECONDS, overlap_seconds: int = OVERLAP_SECONDS) -> List[Tuple[Path, float, float]]:
+def chunk_audio(
+    input_wav: Path,
+    job_id: str,
+    chunk_seconds: int = CHUNK_SECONDS,
+    overlap_seconds: int = OVERLAP_SECONDS,
+) -> list[tuple[Path, float, float]]:
     duration = probe_duration_seconds(input_wav)
-    chunks: List[Tuple[Path, float, float]] = []
+    chunks: list[tuple[Path, float, float]] = []
 
     if duration <= float(chunk_seconds):
         return [(input_wav, 0.0, duration)]

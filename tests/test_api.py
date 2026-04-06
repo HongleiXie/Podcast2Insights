@@ -2,7 +2,6 @@ from fastapi.testclient import TestClient
 
 import app.main as main
 
-
 client = TestClient(main.app)
 
 
@@ -32,11 +31,14 @@ def test_reject_invalid_json_payload():
 
 def test_create_url_job(monkeypatch):
     monkeypatch.setattr(main.worker, "enqueue", lambda job_id: None)
+
     class _Resp:
         def raise_for_status(self):
             return None
+
         def close(self):
             return None
+
     monkeypatch.setattr(main.requests, "get", lambda *args, **kwargs: _Resp())
     response = client.post(
         "/transcriptions",
@@ -53,8 +55,10 @@ def test_create_url_job(monkeypatch):
 
 def test_reject_unreachable_url(monkeypatch):
     monkeypatch.setattr(main.worker, "enqueue", lambda job_id: None)
+
     def _boom(*args, **kwargs):
         raise RuntimeError("network down")
+
     monkeypatch.setattr(main.requests, "get", _boom)
     response = client.post(
         "/transcriptions",

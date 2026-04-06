@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import uuid
 from pathlib import Path
-from typing import Optional
 
 import requests
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
@@ -46,8 +45,8 @@ def index() -> str:
 @app.post("/transcriptions", response_model=CreateJobResponse)
 async def create_transcription(
     request: Request,
-    file: Optional[UploadFile] = File(default=None),
-    engine_form: Optional[str] = Form(default=None, alias="engine"),
+    file: UploadFile | None = File(default=None),
+    engine_form: str | None = Form(default=None, alias="engine"),
 ) -> CreateJobResponse:
     content_type = request.headers.get("content-type", "")
 
@@ -113,7 +112,10 @@ async def create_transcription(
         worker.enqueue(job_id)
         return CreateJobResponse(job_id=job_id, status=job.status)
 
-    raise HTTPException(status_code=415, detail="Use multipart/form-data (file) or application/json (podcast_url)")
+    raise HTTPException(
+        status_code=415,
+        detail="Use multipart/form-data (file) or application/json (podcast_url)",
+    )
 
 
 @app.get("/transcriptions/{job_id}", response_model=GetJobResponse)

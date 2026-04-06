@@ -108,7 +108,7 @@ class TranscriptionWorker:
         # Errors here are isolated — they don't affect the transcript status.
         self._build_rag_index(job_id, output_txt)
 
-    def _build_rag_index(self, job_id: str, transcript_path: "Path") -> None:
+    def _build_rag_index(self, job_id: str, transcript_path: Path) -> None:
         session_store.set(job_id, SessionState(status="building"))
         try:
             rag_chunks = parse_transcript(transcript_path, job_id)

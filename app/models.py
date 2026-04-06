@@ -1,26 +1,25 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from enum import Enum
-from typing import Optional
+from datetime import UTC, datetime
+from enum import StrEnum
 
 from pydantic import BaseModel, Field, HttpUrl
 
 
-class JobStatus(str, Enum):
+class JobStatus(StrEnum):
     queued = "queued"
     running = "running"
     completed = "completed"
     failed = "failed"
 
 
-class Engine(str, Enum):
+class Engine(StrEnum):
     faster_whisper = "faster_whisper"
     qwen3_asr_1_7b = "qwen3_asr_1_7b"
     mlx_whisper = "mlx_whisper"
 
 
-class InputSource(str, Enum):
+class InputSource(StrEnum):
     file_upload = "file_upload"
     podcast_url = "podcast_url"
 
@@ -32,10 +31,10 @@ class UrlSubmission(BaseModel):
 
 class TranscriptMetadata(BaseModel):
     engine: Engine
-    duration_seconds: Optional[float] = None
-    elapsed_seconds: Optional[float] = None
-    chunk_count: Optional[int] = None
-    failure_reason: Optional[str] = None
+    duration_seconds: float | None = None
+    elapsed_seconds: float | None = None
+    chunk_count: int | None = None
+    failure_reason: str | None = None
 
 
 class JobRecord(BaseModel):
@@ -43,10 +42,10 @@ class JobRecord(BaseModel):
     status: JobStatus
     engine: Engine
     input_source: InputSource
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    source_ref: Optional[str] = None
-    transcript_path: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    source_ref: str | None = None
+    transcript_path: str | None = None
     metadata: TranscriptMetadata
 
 
@@ -58,7 +57,7 @@ class Chunk(BaseModel):
     speaker: str
     text: str
     start_ts: str  # "HH:MM:SS" — first line timestamp in this turn
-    end_ts: str    # "HH:MM:SS" — last line timestamp in this turn
+    end_ts: str  # "HH:MM:SS" — last line timestamp in this turn
 
 
 class QueryRequest(BaseModel):
@@ -85,4 +84,4 @@ class GetJobResponse(BaseModel):
     input_source: InputSource
     created_at: datetime
     metadata: TranscriptMetadata
-    text_url: Optional[str] = None
+    text_url: str | None = None

@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Optional
 
 from .config import JOBS_DIR
 from .models import JobRecord, JobStatus
@@ -17,17 +16,23 @@ class JobStore:
         return self.jobs_dir / f"{job_id}.json"
 
     def save(self, job: JobRecord) -> None:
-        job.updated_at = datetime.now(timezone.utc)
+        job.updated_at = datetime.now(UTC)
         self._path(job.job_id).write_text(job.model_dump_json(indent=2), encoding="utf-8")
 
-    def get(self, job_id: str) -> Optional[JobRecord]:
+    def get(self, job_id: str) -> JobRecord | None:
         path = self._path(job_id)
         if not path.exists():
             return None
         data = json.loads(path.read_text(encoding="utf-8"))
         return JobRecord.model_validate(data)
 
-    def set_status(self, job_id: str, status: JobStatus, *, failure_reason: Optional[str] = None) -> JobRecord:
+    def set_status(
+        self,
+        job_id: str,
+        status: JobStatus,
+        *,
+        failure_reason: str | None = None,
+    ) -> JobRecord:
         job = self.get(job_id)
         if job is None:
             raise KeyError(f"Unknown job_id: {job_id}")

@@ -18,11 +18,11 @@ Intentionally in-memory only.  FAISS indexes are fast to rebuild (~seconds
 for a typical podcast) and storing them on disk adds complexity with no real
 benefit for a single-user demo.  On server restart users simply re-upload.
 """
+
 from __future__ import annotations
 
 import threading
 from dataclasses import dataclass, field
-from typing import Optional
 
 import faiss
 
@@ -31,10 +31,10 @@ from .models import Chunk
 
 @dataclass
 class SessionState:
-    status: str = "building"        # "building" | "ready" | "failed"
+    status: str = "building"  # "building" | "ready" | "failed"
     chunks: list[Chunk] = field(default_factory=list)
-    index: Optional[faiss.IndexFlatIP] = None
-    error: Optional[str] = None
+    index: faiss.IndexFlatIP | None = None
+    error: str | None = None
 
 
 class SessionStore:
@@ -46,7 +46,7 @@ class SessionStore:
         with self._lock:
             self._sessions[job_id] = state
 
-    def get(self, job_id: str) -> Optional[SessionState]:
+    def get(self, job_id: str) -> SessionState | None:
         with self._lock:
             return self._sessions.get(job_id)
 

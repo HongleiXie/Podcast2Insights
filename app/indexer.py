@@ -7,6 +7,7 @@ Index choice: IndexFlatIP (exact inner-product search)
 * At podcast scale (hundreds to low-thousands of chunks) this is fast enough
   and avoids the tuning overhead of IVF/HNSW approximate indexes.
 """
+
 from __future__ import annotations
 
 import faiss
@@ -19,9 +20,7 @@ from .models import Chunk
 def build_index(vectors: np.ndarray) -> faiss.IndexFlatIP:
     """Create and populate a FAISS IndexFlatIP from a (N, EMBED_DIM) array."""
     if vectors.ndim != 2 or vectors.shape[1] != EMBED_DIM:
-        raise ValueError(
-            f"Expected vectors of shape (N, {EMBED_DIM}), got {vectors.shape}"
-        )
+        raise ValueError(f"Expected vectors of shape (N, {EMBED_DIM}), got {vectors.shape}")
     index = faiss.IndexFlatIP(EMBED_DIM)
     index.add(vectors.astype(np.float32))
     return index

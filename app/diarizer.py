@@ -22,6 +22,7 @@ Device
 The pipeline is moved to MPS (Apple Silicon GPU) if available, otherwise CPU.
 Diarisation of a 1-hour podcast takes roughly 2-5 min on an M-series chip.
 """
+
 from __future__ import annotations
 
 import logging
@@ -43,9 +44,7 @@ def _get_pipeline():
         import torch
         from pyannote.audio import Pipeline
     except ImportError as exc:
-        raise RuntimeError(
-            "pyannote.audio is not installed. Run: uv add pyannote.audio"
-        ) from exc
+        raise RuntimeError("pyannote.audio is not installed. Run: uv add pyannote.audio") from exc
 
     pipeline = Pipeline.from_pretrained(
         "pyannote/speaker-diarization-3.1",

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import os
+import sys
 from abc import ABC, abstractmethod
 from functools import lru_cache
-import os
 from pathlib import Path
-import sys
 from typing import Any
 
 from .config import (
@@ -94,6 +94,7 @@ class FasterWhisperEngine(ASREngine):
             speaker = getattr(seg, "speaker", None)
             if not speaker and timeline:
                 from .diarizer import speaker_at
+
                 speaker = speaker_at(timeline, abs_ts)
             line = _format_line(abs_ts, speaker, text)
             if line:
@@ -120,7 +121,8 @@ class Qwen3ASREngine(ASREngine):
         self.device_map = self._resolve_device_map(torch, device)
         self.torch_dtype = self._resolve_torch_dtype(torch, dtype, self.device_map)
         self.max_new_tokens = max(16, int(max_new_tokens))
-        # Heuristic for short chunks: enough headroom for CJK/mixed transcripts without over-decoding.
+        # Heuristic for short chunks: enough headroom for CJK/mixed transcripts
+        # without over-decoding.
         self.tokens_per_second = max(2.0, float(os.getenv("QWEN3_ASR_TOKENS_PER_SECOND", "4.0")))
 
         torch.set_grad_enabled(False)
@@ -140,17 +142,18 @@ class Qwen3ASREngine(ASREngine):
                 "Ensure the app is started with the project environment (`uv run ...`) "
                 "and dependencies are synced (`uv sync`)."
             )
-            raise ASRError(
-                f"{hint} Python={sys.executable}. "
-                f"Original error: {exc}"
-            ) from exc
+            raise ASRError(f"{hint} Python={sys.executable}. Original error: {exc}") from exc
 
     def _resolve_device_map(self, torch: Any, configured: str) -> str:
         cfg = configured.strip().lower()
         if cfg and cfg != "auto":
             if cfg == "cuda" and torch.cuda.is_available():
                 return "cuda:0"
-            if cfg == "mps" and hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+            if (
+                cfg == "mps"
+                and hasattr(torch.backends, "mps")
+                and torch.backends.mps.is_available()
+            ):
                 return "mps"
             if cfg == "cpu":
                 return "cpu"
@@ -210,8 +213,16 @@ class Qwen3ASREngine(ASREngine):
                 speaker = item.get("speaker", item.get("speaker_id", item.get("spk")))
             else:
                 text = str(getattr(item, "text", "")).strip()
-                start = getattr(item, "start", getattr(item, "start_time", getattr(item, "begin", 0.0)))
-                speaker = getattr(item, "speaker", getattr(item, "speaker_id", getattr(item, "spk", None)))
+                start = getattr(
+                    item,
+                    "start",
+                    getattr(item, "start_time", getattr(item, "begin", 0.0)),
+                )
+                speaker = getattr(
+                    item,
+                    "speaker",
+                    getattr(item, "speaker_id", getattr(item, "spk", None)),
+                )
 
             if not text:
                 continue
@@ -279,7 +290,7 @@ class MLXWhisperEngine(ASREngine):
             result = mlx_whisper.transcribe(
                 str(audio_path),
                 path_or_hf_repo=self.model_name,
-                language=None,       # auto-detect English / Chinese / mixed
+                language=None,  # auto-detect English / Chinese / mixed
                 word_timestamps=False,
                 verbose=False,
             )
@@ -297,6 +308,7 @@ class MLXWhisperEngine(ASREngine):
             abs_ts = chunk_start + start
             if timeline:
                 from .diarizer import speaker_at
+
                 speaker = speaker_at(timeline, abs_ts)
             else:
                 speaker = "Speaker A"
