@@ -13,7 +13,8 @@ import requests
 from .asr import create_engine
 from .audio_utils import chunk_audio, dedupe_overlap, normalize_to_wav, probe_duration_seconds
 from .chunker import parse_transcript
-from .config import AUDIO_DIR, MAX_UPLOAD_BYTES, OUTPUT_DIR, TMP_DIR
+from .config import AUDIO_DIR, DIARIZE, HF_TOKEN, MAX_UPLOAD_BYTES, OUTPUT_DIR, TMP_DIR
+from .diarizer import diarize
 from .embedder import embed_chunks
 from .indexer import build_index
 from .models import JobStatus
@@ -64,6 +65,10 @@ class TranscriptionWorker:
         duration = probe_duration_seconds(normalized_wav)
         chunks = chunk_audio(normalized_wav, job_id)
 
+        # Run speaker diarisation on the full audio once before chunking so
+        # each transcription chunk can look up the active speaker by timestamp.
+        diarization_timeline = diarize(normalized_wav) if (DIARIZE and HF_TOKEN) else []
+
         engine = create_engine(job.engine)
         temp_txt = TMP_DIR / f"{job_id}.partial.txt"
         temp_txt.write_text("", encoding="utf-8")
@@ -76,6 +81,7 @@ class TranscriptionWorker:
                     "task": "transcribe",
                     "chunk_duration_seconds": max(0.0, end_sec - start_sec),
                     "chunk_start_seconds": start_sec,
+                    "diarization_timeline": diarization_timeline,
                 },
             )
             merged = dedupe_overlap(transcript_text, chunk_text)

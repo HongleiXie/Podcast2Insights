@@ -120,10 +120,41 @@
         background: #f8fbfa;
         border: 1px solid var(--line);
         border-radius: 10px;
-        white-space: pre-wrap;
         min-height: 60px;
         font-size: 0.95rem;
         line-height: 1.65;
+      }
+
+      /* Markdown styles inside the answer box */
+      .answer-box p  { margin: 0 0 0.75em; }
+      .answer-box p:last-child { margin-bottom: 0; }
+      .answer-box strong { font-weight: 700; }
+      .answer-box em     { font-style: italic; }
+      .answer-box ol, .answer-box ul {
+        margin: 0.4em 0 0.75em;
+        padding-left: 1.4em;
+      }
+      .answer-box li { margin-bottom: 0.25em; }
+      .answer-box code {
+        font-family: "SF Mono", "Fira Code", monospace;
+        font-size: 0.88em;
+        background: #eef2f0;
+        padding: 1px 5px;
+        border-radius: 4px;
+      }
+      .answer-box pre {
+        background: #eef2f0;
+        border-radius: 8px;
+        padding: 10px 12px;
+        overflow-x: auto;
+        font-size: 0.88em;
+      }
+      .answer-box pre code { background: none; padding: 0; }
+      .answer-box blockquote {
+        border-left: 3px solid var(--accent);
+        margin: 0.5em 0;
+        padding-left: 12px;
+        color: var(--muted);
       }
 
       .sources {
@@ -212,6 +243,7 @@
       </div>
 
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
     <script src="/static/main.js"></script>
   </body>
 </html>

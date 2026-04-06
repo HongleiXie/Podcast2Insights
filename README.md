@@ -16,7 +16,7 @@ Everything runs locally. No data leaves your machine.
 |---|---|---|
 | **OS** | macOS (Apple Silicon) | macOS M3 / M4 Pro |
 | **RAM** | 16 GB | 48 GB |
-| **Python** | 3.11+ | 3.11+ |
+| **Python** | 3.11-3.13 | 3.11-3.13 |
 | **Disk** | ~10 GB free | ~15 GB free |
 
 > The recommended spec is for running the full stack (mlx-whisper large-v3 + bge-m3 + Qwen3-8B) comfortably without swapping. The minimum spec can run smaller model variants.
@@ -83,6 +83,16 @@ Key environment variables (all optional):
 | `OLLAMA_BASE_URL` | `http://localhost:11434/v1` | Ollama API base URL |
 | `OLLAMA_THINKING` | `false` | Enable Qwen3 chain-of-thought thinking mode |
 | `TOP_K` | `5` | Number of chunks retrieved per query |
+| `HF_TOKEN` | _(unset)_ | HuggingFace access token for speaker diarisation |
+| `DIARIZE` | `true` | Enable speaker diarisation (requires `HF_TOKEN`) |
+
+### Speaker diarisation setup
+
+Without `HF_TOKEN`, all speakers are labelled "Speaker A". To enable multi-speaker detection:
+
+1. Accept model conditions at [huggingface.co/pyannote/speaker-diarization-3.1](https://huggingface.co/pyannote/speaker-diarization-3.1)
+2. Generate a token at [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)
+3. Set `HF_TOKEN=hf_...` in your environment (e.g. in a `.env` file)
 
 ## Development
 

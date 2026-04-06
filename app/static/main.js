@@ -155,18 +155,24 @@ submitBtn.addEventListener("click", async () => {
   }
 });
 
-// ── Ask question (streaming) ─────────────────────────────────────────────────
+// ── Ask question (streaming + markdown render) ───────────────────────────────
+// Configure marked: GitHub Flavored Markdown, newlines as <br>
+marked.use({ breaks: true, gfm: true });
+
 askBtn.addEventListener("click", async () => {
   const question = questionEl.value.trim();
   if (!question) return;
   if (!activeJobId) return;
 
   // Reset UI
-  answerBox.textContent = "";
+  answerBox.innerHTML = "";
   answerBox.classList.remove("hidden");
   sourcesEl.innerHTML = "";
   sourcesEl.classList.add("hidden");
   askBtn.disabled = true;
+
+  // Accumulate raw markdown here; re-render to HTML on every token
+  let rawAnswer = "";
 
   try {
     const res = await fetch(`/transcriptions/${activeJobId}/query`, {
@@ -201,16 +207,20 @@ askBtn.addEventListener("click", async () => {
         try {
           const event = JSON.parse(payload);
           if (event.token) {
-            answerBox.textContent += event.token;
+            rawAnswer += event.token;
+            // Re-render the full accumulated markdown on each token so
+            // formatting appears as it streams (bold, lists, etc.)
+            answerBox.innerHTML = marked.parse(rawAnswer);
           }
           if (event.error) {
-            answerBox.textContent += `\n[Error: ${event.error}]`;
+            rawAnswer += `\n\n> ⚠️ Error: ${event.error}`;
+            answerBox.innerHTML = marked.parse(rawAnswer);
           }
         } catch { /* ignore malformed event */ }
       }
     }
   } catch (err) {
-    answerBox.textContent = `Error: ${err.message}`;
+    answerBox.innerHTML = marked.parse(`> ⚠️ ${err.message}`);
   } finally {
     askBtn.disabled = false;
   }

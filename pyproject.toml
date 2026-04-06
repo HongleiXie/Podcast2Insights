@@ -3,7 +3,7 @@ name = "podcast2insights"
 version = "0.1.0"
 description = "Bilingual podcast transcription demo (English + Chinese)"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.14"
 dependencies = [
   "fastapi==0.115.6",
   "uvicorn==0.34.0",
@@ -20,6 +20,8 @@ dependencies = [
   "faiss-cpu>=1.8.0",
   "openai>=1.30.0",
   "numpy>=1.26.0",
+  # Speaker diarisation (requires HF_TOKEN — see app/diarizer.py)
+  "pyannote.audio>=3.3.0",
 ]
 
 [dependency-groups]
