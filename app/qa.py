@@ -27,8 +27,6 @@ Q&A it adds latency with diminishing returns, so it is off by default
 user message — Qwen3's documented way to suppress thinking per-request.
 """
 
-from __future__ import annotations
-
 import json
 from collections.abc import AsyncGenerator
 

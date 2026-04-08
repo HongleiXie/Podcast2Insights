@@ -12,11 +12,8 @@ Strategy
   in each chunk — used for citation in Q&A answers.
 """
 
-from __future__ import annotations
-
 import re
 from pathlib import Path
-
 from .models import Chunk
 
 # Matches: [HH:MM:SS] Any Speaker Label: transcript text

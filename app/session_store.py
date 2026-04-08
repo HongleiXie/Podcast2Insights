@@ -19,13 +19,9 @@ for a typical podcast) and storing them on disk adds complexity with no real
 benefit for a single-user demo.  On server restart users simply re-upload.
 """
 
-from __future__ import annotations
-
 import threading
 from dataclasses import dataclass, field
-
 import faiss
-
 from .models import Chunk
 
 

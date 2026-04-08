@@ -14,10 +14,7 @@ Default is "mps" (Metal on Apple Silicon).  Falls back to "cpu" if MPS is
 unavailable — useful when developing on non-Apple hardware.
 """
 
-from __future__ import annotations
-
 from functools import lru_cache
-
 import numpy as np
 from sentence_transformers import SentenceTransformer
 

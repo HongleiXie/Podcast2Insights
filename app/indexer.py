@@ -8,11 +8,8 @@ Index choice: IndexFlatIP (exact inner-product search)
   and avoids the tuning overhead of IVF/HNSW approximate indexes.
 """
 
-from __future__ import annotations
-
 import faiss
 import numpy as np
-
 from .embedder import EMBED_DIM
 from .models import Chunk
 

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import queue
 import shutil
 import subprocess
@@ -9,7 +7,6 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import requests
-
 from .asr import create_engine
 from .audio_utils import chunk_audio, dedupe_overlap, normalize_to_wav, probe_duration_seconds
 from .chunker import parse_transcript
