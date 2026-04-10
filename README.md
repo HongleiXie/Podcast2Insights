@@ -1,6 +1,5 @@
 # Podcast2Insights
-
-Upload a podcast → get a transcript → ask questions about it. A self-hosted, fully local toy version of NotebookLM. English, Chinese, and mixed-language audio supported.
+Upload a podcast → get a transcript → ask questions about it. A self-hosted, fully local toy version of NotebookLM. English, Chinese, and mixed-language audio supported. Please checkout the [technical report](https://github.com/HongleiXie/Podcast2Insights/blob/main/TECHNICAL_REPORT.md) for details.
 
 ## What it does
 
